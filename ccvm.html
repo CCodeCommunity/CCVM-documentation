@@ -1,0 +1,609 @@
+<style>
+	* {
+		text-align: center;
+	}
+
+	body {
+		margin: 0vh 20vw;
+	}
+
+	ul {
+		list-style: none;
+		padding-top: 0;
+		text-align: center;
+		
+	}
+
+	li {
+		text-align: left;
+	}
+
+	.nested-list {
+		width: 40vw;
+		margin-left: 15vw;
+	}
+
+	h3 {
+		margin-bottom: 0;
+		margin-top: 40px;
+	}
+
+	p {
+		text-align: left;
+	}
+
+	.codeblock { 
+		padding: 8px;
+		border-left: 5px solid #777;
+		background: #eee;
+		font-family: Consolas, monaco, monospace;
+		width: 100%;
+	}
+
+	.cb-title {
+		float: left;
+		width: 100%;
+		text-align: left;
+		font-weight: bold;
+	}
+
+	.cb-mark-green {
+		background: #86cf7e;
+		padding: 1px 0px;
+		margin-bottom: -1px -0px;
+	}
+
+	.cb-mark-blue {
+		background: #b9abf7;
+		padding: 1px 0px;
+		margin-bottom: -1px -0px;
+	}
+
+	.cb-mark-red {
+		background: #e3a8a8;
+		padding: 1px 0px;
+		margin-bottom: -1px -0px;
+	}
+</style>
+
+<pre style="font-size: 30px">
+ _____   _____   _  _   __  ___
+/  __ \ /  __ \ | || | |   \/  |
+| /  \/ | /  \/ | || | |       |
+| |     | |     | || | |  |\/| |
+| \__/\ | \__/\ \ \/ / |  |  | |
+ \____/  \____/  \__/   \_|  |_/
+</pre>
+
+<h3><b><pre>
+---------------------------------
+A peek under the hood of the CCVM
+---------------------------------
+</pre></b></h3>
+
+content:
+<ul class="nested-list">
+	<li>1	Bytecode format</li>
+	<li><ul>
+		<li><a href="#1.1">1.1&nbsp;&nbsp;&nbsp;&nbsp;Hex encoded files</a></li>
+		<li><a href="#1.2">1.2&nbsp;&nbsp;&nbsp;&nbsp;Sections</a></li>
+		<li><ul>
+			<li>1.2.1&nbsp;&nbsp;&nbsp;&nbsp;Header</li>
+			<li>1.2.2&nbsp;&nbsp;&nbsp;&nbsp;Code</li>
+			<li><ul>
+				<li>1.2.2A&nbsp;&nbsp;&nbsp;&nbsp;Instructions</li>
+				<li>1.2.2B&nbsp;&nbsp;&nbsp;&nbsp;Registers</li>
+				<li>1.2.2C&nbsp;&nbsp;&nbsp;&nbsp;Number literals</li>
+				<li>1.2.2D&nbsp;&nbsp;&nbsp;&nbsp;Addresses</li>
+			</ul></li>
+		</ul></li>
+		
+		<li>1.3&nbsp;&nbsp;&nbsp;&nbsp;Examples</li>
+	</ul></li>
+	<li>2&nbsp;&nbsp;&nbsp;&nbsp;VM internals</li>
+	<li>3&nbsp;&nbsp;&nbsp;&nbsp;Bytecode interpreter</li>
+	<li>4&nbsp;&nbsp;&nbsp;&nbsp;Assembly format</li>
+	<li>5&nbsp;&nbsp;&nbsp;&nbsp;Assembler</li>
+</ul>
+
+<h3 id="1.1">1.1 Hex encoded files</h3>
+
+<p>
+The virtual machine is able to run programs that are stored in .ccb files. These files may look like normal files at first glance but when you put them in a text editor you may notice that its unreadable as if the file has been corrupted.
+</p>
+
+<p>
+This is because the .ccb files are normally not meant to readed by humans, thuss are not formatted using ascii encoding.
+</p>
+
+<p>
+To find the true meaning of this executable file we must translate each and every character to its ascii value using the following ascii convertion table:
+</p>
+
+<p>
+	<table cellspacing="0" cellpadding="5" border="1" align="center">
+	<tbody><tr>
+		<th width="50" align="center">Char.</th>
+		<th width="50" align="center">Dec.</th>
+		<th width="50" align="center">Hex.</th>
+		<th width="24">&nbsp;</th>
+		<th width="50" align="center">Char.</th>
+		<th width="50" align="center">Dec.</th>
+		<th width="50" align="center">Hex.</th>
+		<th width="24">&nbsp;</th>
+		<th width="50" align="center">Char.</th>
+		<th width="50" align="center">Dec.</th>
+		<th width="50" align="center">Hex.</th></tr>
+	<tr>
+		<td width="50" align="center">*space*</td>
+		<td width="50" align="center">32</td>
+		<td width="50" align="center">20</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">@</td>
+		<td width="50" align="center">64</td>
+		<td width="50" align="center">40</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">`</td>
+		<td width="50" align="center">96</td>
+		<td width="50" align="center">60</td></tr>
+	<tr>
+		<td width="50" align="center">!</td>
+		<td width="50" align="center">33</td>
+		<td width="50" align="center">21</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">A</td>
+		<td width="50" align="center">65</td>
+		<td width="50" align="center">41</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">a</td>
+		<td width="50" align="center">97</td>
+		<td width="50" align="center">61</td></tr>
+	<tr>
+		<td width="50" align="center">"</td>
+		<td width="50" align="center">34</td>
+		<td width="50" align="center">22</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">B</td>
+		<td width="50" align="center">66</td>
+		<td width="50" align="center">42</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">b</td>
+		<td width="50" align="center">98</td>
+		<td width="50" align="center">62</td></tr>
+	<tr>
+		<td width="50" align="center">#</td>
+		<td width="50" align="center">35</td>
+		<td width="50" align="center">23</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">C</td>
+		<td width="50" align="center">67</td>
+		<td width="50" align="center">43</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">c</td>
+		<td width="50" align="center">99</td>
+		<td width="50" align="center">63</td></tr>
+	<tr>
+		<td width="50" align="center">$</td>
+		<td width="50" align="center">36</td>
+		<td width="50" align="center">24</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">D</td>
+		<td width="50" align="center">68</td>
+		<td width="50" align="center">44</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">d</td>
+		<td width="50" align="center">100</td>
+		<td width="50" align="center">64</td></tr>
+	<tr>
+		<td width="50" align="center">%</td>
+		<td width="50" align="center">37</td>
+		<td width="50" align="center">25</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">E</td>
+		<td width="50" align="center">69</td>
+		<td width="50" align="center">45</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">e</td>
+		<td width="50" align="center">101</td>
+		<td width="50" align="center">65</td></tr>
+	<tr>
+		<td width="50" align="center">&amp;</td>
+		<td width="50" align="center">38</td>
+		<td width="50" align="center">26</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">F</td>
+		<td width="50" align="center">70</td>
+		<td width="50" align="center">46</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">f</td>
+		<td width="50" align="center">102</td>
+		<td width="50" align="center">66</td></tr>
+	<tr>
+		<td width="50" align="center">'</td>
+		<td width="50" align="center">39</td>
+		<td width="50" align="center">27</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">G</td>
+		<td width="50" align="center">71</td>
+		<td width="50" align="center">47</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">g</td>
+		<td width="50" align="center">103</td>
+		<td width="50" align="center">67</td></tr>
+	<tr>
+		<td width="50" align="center">(</td>
+		<td width="50" align="center">40</td>
+		<td width="50" align="center">28</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">H</td>
+		<td width="50" align="center">72</td>
+		<td width="50" align="center">48</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">h</td>
+		<td width="50" align="center">104</td>
+		<td width="50" align="center">68</td></tr>
+	<tr>
+		<td width="50" align="center">)</td>
+		<td width="50" align="center">41</td>
+		<td width="50" align="center">29</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">I</td>
+		<td width="50" align="center">73</td>
+		<td width="50" align="center">49</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">i</td>
+		<td width="50" align="center">105</td>
+		<td width="50" align="center">69</td></tr>
+	<tr>
+		<td width="50" align="center">*</td>
+		<td width="50" align="center">42</td>
+		<td width="50" align="center">2A</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">J</td>
+		<td width="50" align="center">74</td>
+		<td width="50" align="center">4A</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">j</td>
+		<td width="50" align="center">106</td>
+		<td width="50" align="center">6A</td></tr>
+	<tr>
+		<td width="50" align="center">+</td>
+		<td width="50" align="center">43</td>
+		<td width="50" align="center">2B</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">K</td>
+		<td width="50" align="center">75</td>
+		<td width="50" align="center">4B</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">k</td>
+		<td width="50" align="center">107</td>
+		<td width="50" align="center">6B</td></tr>
+	<tr>
+		<td width="50" align="center">,</td>
+		<td width="50" align="center">44</td>
+		<td width="50" align="center">2C</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">L</td>
+		<td width="50" align="center">76</td>
+		<td width="50" align="center">4C</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">l</td>
+		<td width="50" align="center">108</td>
+		<td width="50" align="center">6C</td></tr>
+	<tr>
+		<td width="50" align="center">-</td>
+		<td width="50" align="center">45</td>
+		<td width="50" align="center">2D</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">M</td>
+		<td width="50" align="center">77</td>
+		<td width="50" align="center">4D</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">m</td>
+		<td width="50" align="center">109</td>
+		<td width="50" align="center">6D</td></tr>
+	<tr>
+		<td width="50" align="center">.</td>
+		<td width="50" align="center">46</td>
+		<td width="50" align="center">2E</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">N</td>
+		<td width="50" align="center">78</td>
+		<td width="50" align="center">4E</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">n</td>
+		<td width="50" align="center">110</td>
+		<td width="50" align="center">6E</td></tr>
+	<tr>
+		<td width="50" align="center">/</td>
+		<td width="50" align="center">47</td>
+		<td width="50" align="center">2F</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">O</td>
+		<td width="50" align="center">79</td>
+		<td width="50" align="center">4F</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">o</td>
+		<td width="50" align="center">111</td>
+		<td width="50" align="center">6F</td></tr>
+	<tr>
+		<td width="50" align="center">0</td>
+		<td width="50" align="center">48</td>
+		<td width="50" align="center">30</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">P</td>
+		<td width="50" align="center">80</td>
+		<td width="50" align="center">50</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">p</td>
+		<td width="50" align="center">112</td>
+		<td width="50" align="center">70</td></tr>
+	<tr>
+		<td width="50" align="center">1</td>
+		<td width="50" align="center">49</td>
+		<td width="50" align="center">31</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">Q</td>
+		<td width="50" align="center">81</td>
+		<td width="50" align="center">51</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">q</td>
+		<td width="50" align="center">113</td>
+		<td width="50" align="center">71</td></tr>
+	<tr>
+		<td width="50" align="center">2</td>
+		<td width="50" align="center">50</td>
+		<td width="50" align="center">32</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">R</td>
+		<td width="50" align="center">82</td>
+		<td width="50" align="center">52</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">r</td>
+		<td width="50" align="center">114</td>
+		<td width="50" align="center">72</td></tr>
+	<tr>
+		<td width="50" align="center">3</td>
+		<td width="50" align="center">51</td>
+		<td width="50" align="center">33</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">S</td>
+		<td width="50" align="center">83</td>
+		<td width="50" align="center">53</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">s</td>
+		<td width="50" align="center">115</td>
+		<td width="50" align="center">73</td></tr>
+	<tr>
+		<td width="50" align="center">4</td>
+		<td width="50" align="center">52</td>
+		<td width="50" align="center">34</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">T</td>
+		<td width="50" align="center">84</td>
+		<td width="50" align="center">54</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">t</td>
+		<td width="50" align="center">116</td>
+		<td width="50" align="center">74</td></tr>
+	<tr>
+		<td width="50" align="center">5</td>
+		<td width="50" align="center">53</td>
+		<td width="50" align="center">35</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">U</td>
+		<td width="50" align="center">85</td>
+		<td width="50" align="center">55</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">u</td>
+		<td width="50" align="center">117</td>
+		<td width="50" align="center">75</td></tr>
+	<tr>
+		<td width="50" align="center">6</td>
+		<td width="50" align="center">54</td>
+		<td width="50" align="center">36</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">V</td>
+		<td width="50" align="center">86</td>
+		<td width="50" align="center">56</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">v</td>
+		<td width="50" align="center">118</td>
+		<td width="50" align="center">76</td></tr>
+	<tr>
+		<td width="50" align="center">7</td>
+		<td width="50" align="center">55</td>
+		<td width="50" align="center">37</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">W</td>
+		<td width="50" align="center">87</td>
+		<td width="50" align="center">57</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">w</td>
+		<td width="50" align="center">119</td>
+		<td width="50" align="center">77</td></tr>
+	<tr>
+		<td width="50" align="center">8</td>
+		<td width="50" align="center">56</td>
+		<td width="50" align="center">38</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">X</td>
+		<td width="50" align="center">88</td>
+		<td width="50" align="center">58</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">x</td>
+		<td width="50" align="center">120</td>
+		<td width="50" align="center">78</td></tr>
+	<tr>
+		<td width="50" align="center">9</td>
+		<td width="50" align="center">57</td>
+		<td width="50" align="center">39</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">Y</td>
+		<td width="50" align="center">89</td>
+		<td width="50" align="center">59</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">y</td>
+		<td width="50" align="center">121</td>
+		<td width="50" align="center">79</td></tr>
+	<tr>
+		<td width="50" align="center">:</td>
+		<td width="50" align="center">58</td>
+		<td width="50" align="center">3A</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">Z</td>
+		<td width="50" align="center">90</td>
+		<td width="50" align="center">5A</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">z</td>
+		<td width="50" align="center">122</td>
+		<td width="50" align="center">7A</td></tr>
+	<tr>
+		<td width="50" align="center">;</td>
+		<td width="50" align="center">59</td>
+		<td width="50" align="center">3B</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">[</td>
+		<td width="50" align="center">91</td>
+		<td width="50" align="center">5B</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">{</td>
+		<td width="50" align="center">123</td>
+		<td width="50" align="center">7B</td></tr>
+	<tr>
+		<td width="50" align="center">&lt;</td>
+		<td width="50" align="center">60</td>
+		<td width="50" align="center">3C</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">\</td>
+		<td width="50" align="center">92</td>
+		<td width="50" align="center">5C</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">|</td>
+		<td width="50" align="center">124</td>
+		<td width="50" align="center">7C</td></tr>
+	<tr>
+		<td width="50" align="center">=</td>
+		<td width="50" align="center">61</td>
+		<td width="50" align="center">3D</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">]</td>
+		<td width="50" align="center">93</td>
+		<td width="50" align="center">5D</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">}</td>
+		<td width="50" align="center">125</td>
+		<td width="50" align="center">7D</td></tr>
+	<tr>
+		<td width="50" align="center">&gt;</td>
+		<td width="50" align="center">62</td>
+		<td width="50" align="center">3E</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">^</td>
+		<td width="50" align="center">94</td>
+		<td width="50" align="center">5E</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">~</td>
+		<td width="50" align="center">126</td>
+		<td width="50" align="center">7E</td></tr>
+	<tr>
+		<td width="50" align="center">?</td>
+		<td width="50" align="center">63</td>
+		<td width="50" align="center">3F</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">_</td>
+		<td width="50" align="center">95</td>
+		<td width="50" align="center">5F</td>
+		<td width="24">&nbsp;</td>
+		<td width="50" align="center">*nbsp*</td>
+		<td width="50" align="center">127</td>
+		<td width="50" align="center">7F</td></tr>
+	<tr>
+		<td colspan="11"><br><b>NOTE:</b> Decimal 0-31 (0x00-1F) and 127 (0x7F) are "non-printable characters"</td></tr>
+	</tbody></table>
+</p>
+
+<p>
+	Since its near infeasible to decode the entire program by hand, there are special editors that display the hexadecimal numeric value's of the file content instead of the ascii decoding of the file.
+</p>
+
+<p>
+	When we open a file in such an editor, we might be presented with a file content similair to the following:
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	0x73 0x70 0x61 0x6d 0x20 0x0a 0x1d 0x1d 0x1d 0x1d 0x06 0x00 0x00 0x00 0x00 0x00
+	0x06 0x03 0x00 0x00 0x00 0x00 0x06 0x01 0x00 0x00 0x00 0x00 0x06 0x02 0x00 0x00
+	0x00 0x05 0xff 0x06 0x00 0x00 0x00 0x00 0x03 0x09 0x00 0x00 0x00 0x64 0x03 0x08
+	0x01 0x00 0x00 0x00 0x64 0xff 0x06 0x00 0x00 0x00 0x00 0x00 0x06 0x01 0x00 0x00
+	0x00 0x00 0x06 0x02 0x00 0x00 0x00 0x01 0xff 0x40 0x31 0x03 0x00 0x00 0x00 0x64
+	0x01 0x00 0x00 0x00 0x01 0x02 0x03 0x11 0x03 0x03 0x34 0x00 0x00 0x00 0x0c 0x00
+</p>
+
+<p>
+	Notice: hexadecimal is just another way of describing numeric values, therefore you can translate between hexadecimal and our normal numeric system by using a converter like <a href="https://www.rapidtables.com/convert/number/hex-to-decimal.html" target="_blank">this</a>. you can use it to convert hex numbers to decimal, or reverse when you press the "swap button"
+</p>
+
+<p>
+	As you can see, each hexadecimal number starts with 0x (indicating this is a hex number) and then has 2 digits which are either 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e or f. since the 0x prefixes really disturb the view, we will leave them away from now on, you will beable to tell if the file is a hexadecimal file by looking at the title of the code block
+</p>
+
+<p>
+	Without the prefixes, a .ccb file might look like the following in a hex editor:
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	73 70 61 6d 20 0a 1d 1d 1d 1d 06 00 00 00 00 00
+	06 03 00 00 00 00 06 01 00 00 00 00 06 02 00 00
+	00 05 ff 06 00 00 00 00 03 09 00 00 00 64 03 08
+	01 00 00 00 64 ff 06 00 00 00 00 00 06 01 00 00
+	00 00 06 02 00 00 00 01 ff 40 31 03 00 00 00 64
+	01 00 00 00 01 02 03 11 03 03 34 00 00 00 0c 00
+</p>
+
+<h3 id="1.2">1.2 Sections</h3>
+<p>
+	These CCVM binary files are split into 2 sections which all have a different purposes and are interpreted by the bytecode interpreter in different ways. To distinguish these 2 sections, we look for the first sequence of '0x1d 0x1d 0x1d 0x1d' this sequence is called the "section seperation sequence"
+</p>
+
+<p>
+	For example, when applied to the bytecode example from the previous chapter, the section seperation sequence is found right here marked in green:
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	73 70 61 6d 20 0a <span class="cb-mark-green">1d 1d 1d 1d</span> 06 00 00 00 00 00
+	06 03 00 00 00 00 06 01 00 00 00 00 06 02 00 00
+	00 05 ff 06 00 00 00 00 03 09 00 00 00 64 03 08
+	01 00 00 00 64 ff 06 00 00 00 00 00 06 01 00 00
+	00 00 06 02 00 00 00 01 ff 40 31 03 00 00 00 64
+	01 00 00 00 01 02 03 11 03 03 34 00 00 00 0c 00
+</p>
+
+<p>
+	Once we have located the section seperation sequence, we can identify the "header section" as all the bytes before the section seperation sequence. And the "code section" can be identified as all the bytes after the section seperation sequence
+</p>
+
+<p>
+	Here is the same example yet again, but the header section marked blue, and the code section marked red:
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	<span class="cb-mark-blue">73 70 61 6d 20 0a</span> <span class="cb-mark-green">1d 1d 1d 1d</span> <span class="cb-mark-red">06 00 00 00 00 00
+	06 03 00 00 00 00 06 01 00 00 00 00 06 02 00 00
+	00 05 ff 06 00 00 00 00 03 09 00 00 00 64 03 08
+	01 00 00 00 64 ff 06 00 00 00 00 00 06 01 00 00
+	00 00 06 02 00 00 00 01 ff 40 31 03 00 00 00 64
+	01 00 00 00 01 02 03 11 03 03 34 00 00 00 0c 00</span>
+</p>
