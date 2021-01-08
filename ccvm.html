@@ -1,6 +1,7 @@
 <style>
 	* {
 		text-align: center;
+		font-size: 13px;
 	}
 
 	body {
@@ -26,6 +27,7 @@
 	h3 {
 		margin-bottom: 0;
 		margin-top: 40px;
+		font-size: 18px;
 	}
 
 	p {
@@ -37,6 +39,7 @@
 		border-left: 5px solid #777;
 		background: #eee;
 		font-family: Consolas, monaco, monospace;
+		font-size: 12px;
 		width: 100%;
 	}
 
@@ -50,23 +53,35 @@
 	.cb-mark-green {
 		background: #86cf7e;
 		padding: 1px 0px;
+		font-size: 12px;
 		margin-bottom: -1px -0px;
 	}
 
 	.cb-mark-blue {
 		background: #b9abf7;
 		padding: 1px 0px;
+		font-size: 12px;
 		margin-bottom: -1px -0px;
 	}
 
 	.cb-mark-red {
 		background: #e3a8a8;
 		padding: 1px 0px;
+		font-size: 12px;
 		margin-bottom: -1px -0px;
+	}
+
+	th, td {
+		text-align: left;
+	}
+
+	.wide-table {
+		margin-left: -15vw;
+		width: calc(100% + 30vw);
 	}
 </style>
 
-<pre style="font-size: 30px">
+<pre style="font-size: 20px">
  _____   _____   _  _   __  ___
 /  __ \ /  __ \ | || | |   \/  |
 | /  \/ | /  \/ | || | |       |
@@ -81,6 +96,9 @@ A peek under the hood of the CCVM
 ---------------------------------
 </pre></b></h3>
 
+<body></body>
+<head></head>
+
 content:
 <ul class="nested-list">
 	<li>1	Bytecode format</li>
@@ -88,17 +106,17 @@ content:
 		<li><a href="#1.1">1.1&nbsp;&nbsp;&nbsp;&nbsp;Hex encoded files</a></li>
 		<li><a href="#1.2">1.2&nbsp;&nbsp;&nbsp;&nbsp;Sections</a></li>
 		<li><ul>
-			<li>1.2.1&nbsp;&nbsp;&nbsp;&nbsp;Header</li>
-			<li>1.2.2&nbsp;&nbsp;&nbsp;&nbsp;Code</li>
+			<li><a href="#1.2.1">1.2.1&nbsp;&nbsp;&nbsp;&nbsp;Header section</a></li>
+			<li><a href="#1.2.2">1.2.2&nbsp;&nbsp;&nbsp;&nbsp;Code section</a></li>
 			<li><ul>
-				<li>1.2.2A&nbsp;&nbsp;&nbsp;&nbsp;Instructions</li>
-				<li>1.2.2B&nbsp;&nbsp;&nbsp;&nbsp;Registers</li>
-				<li>1.2.2C&nbsp;&nbsp;&nbsp;&nbsp;Number literals</li>
-				<li>1.2.2D&nbsp;&nbsp;&nbsp;&nbsp;Addresses</li>
+				<li><a href="#1.2.2A">1.2.2A&nbsp;&nbsp;&nbsp;&nbsp;Numbers</a></li>
+				<li><a href="#1.2.2B">1.2.2B&nbsp;&nbsp;&nbsp;&nbsp;Registers</a></li>
+				<li><a href="#1.2.2C">1.2.2C&nbsp;&nbsp;&nbsp;&nbsp;Addresses</a></li>
+				<li><a href="#1.2.2D">1.2.2D&nbsp;&nbsp;&nbsp;&nbsp;Opcodes</a></li>
 			</ul></li>
 		</ul></li>
-		
-		<li>1.3&nbsp;&nbsp;&nbsp;&nbsp;Examples</li>
+		<li>1.4&nbsp;&nbsp;&nbsp;&nbsp;Instruction list</li>
+		<li>1.5&nbsp;&nbsp;&nbsp;&nbsp;Examples</li>
 	</ul></li>
 	<li>2&nbsp;&nbsp;&nbsp;&nbsp;VM internals</li>
 	<li>3&nbsp;&nbsp;&nbsp;&nbsp;Bytecode interpreter</li>
@@ -121,7 +139,7 @@ To find the true meaning of this executable file we must translate each and ever
 </p>
 
 <p>
-	<table cellspacing="0" cellpadding="5" border="1" align="center">
+	<table cellspacing="1" cellpadding="5" border="1" align="center">
 	<tbody><tr>
 		<th width="50" align="center">Char.</th>
 		<th width="50" align="center">Dec.</th>
@@ -535,7 +553,7 @@ To find the true meaning of this executable file we must translate each and ever
 	Hexadecimal
 </span>
 <p class="codeblock hex">
-	0x73 0x70 0x61 0x6d 0x20 0x0a 0x1d 0x1d 0x1d 0x1d 0x06 0x00 0x00 0x00 0x00 0x00
+	0x73 0x70 0x61 0x6d 0x0a 0x1d 0x1d 0x1d 0x1d 0x06 0x00 0x00 0x00 0x00 0x00
 	0x06 0x03 0x00 0x00 0x00 0x00 0x06 0x01 0x00 0x00 0x00 0x00 0x06 0x02 0x00 0x00
 	0x00 0x05 0xff 0x06 0x00 0x00 0x00 0x00 0x03 0x09 0x00 0x00 0x00 0x64 0x03 0x08
 	0x01 0x00 0x00 0x00 0x64 0xff 0x06 0x00 0x00 0x00 0x00 0x00 0x06 0x01 0x00 0x00
@@ -559,7 +577,7 @@ To find the true meaning of this executable file we must translate each and ever
 	Hexadecimal
 </span>
 <p class="codeblock hex">
-	73 70 61 6d 20 0a 1d 1d 1d 1d 06 00 00 00 00 00
+	73 70 61 6d 0a 1d 1d 1d 1d 06 00 00 00 00 00
 	06 03 00 00 00 00 06 01 00 00 00 00 06 02 00 00
 	00 05 ff 06 00 00 00 00 03 09 00 00 00 64 03 08
 	01 00 00 00 64 ff 06 00 00 00 00 00 06 01 00 00
@@ -580,7 +598,7 @@ To find the true meaning of this executable file we must translate each and ever
 	Hexadecimal
 </span>
 <p class="codeblock hex">
-	73 70 61 6d 20 0a <span class="cb-mark-green">1d 1d 1d 1d</span> 06 00 00 00 00 00
+	73 70 61 6d 0a <span class="cb-mark-green">1d 1d 1d 1d</span> 06 00 00 00 00 00
 	06 03 00 00 00 00 06 01 00 00 00 00 06 02 00 00
 	00 05 ff 06 00 00 00 00 03 09 00 00 00 64 03 08
 	01 00 00 00 64 ff 06 00 00 00 00 00 06 01 00 00
@@ -600,10 +618,492 @@ To find the true meaning of this executable file we must translate each and ever
 	Hexadecimal
 </span>
 <p class="codeblock hex">
-	<span class="cb-mark-blue">73 70 61 6d 20 0a</span> <span class="cb-mark-green">1d 1d 1d 1d</span> <span class="cb-mark-red">06 00 00 00 00 00
+	<span class="cb-mark-blue">73 70 61 6d 0a</span> <span class="cb-mark-green">1d 1d 1d 1d</span> <span class="cb-mark-red">06 00 00 00 00 00
 	06 03 00 00 00 00 06 01 00 00 00 00 06 02 00 00
 	00 05 ff 06 00 00 00 00 03 09 00 00 00 64 03 08
 	01 00 00 00 64 ff 06 00 00 00 00 00 06 01 00 00
 	00 00 06 02 00 00 00 01 ff 40 31 03 00 00 00 64
 	01 00 00 00 01 02 03 11 03 03 34 00 00 00 0c 00</span>
 </p>
+
+<h3 id="1.2.1">1.2.1 Header section</h3>
+<p>
+	The header is the simplest section to grasp out of the 2. It's purpose is to store data, which could either be numerical or string data depending how the code in the code section handles it. In the case of our example, its string data.
+</p>
+
+<p>
+	If we use the ascii table from earlier to translate each hex value to its corresponding character, we will get the string "spam" and then a line break symbol.
+</p>
+
+<p>
+	When we run this program, the virtual machine will grab all this data in the header and throw it in memory at memory address 0. This data can then later be read and used by the code in the code section.
+</p>
+
+<p>
+	Where and how exactly this data i mounted in memory will be explained later.
+</p>
+
+<h3 id="1.2.2">1.2.2 Code section</h3>
+<p>
+	The code section itself is split into various "instructions" which all can have an arbitrary length, but are at least 1 byte in length. This instruction can then also be split in various amount of meta data which discribes exactly what the instruction is meant to do.
+</p>
+
+<img src="instruction.png" style="width: 50vw">
+
+<p>
+	These meta bytes exists in 4 different types:
+	<ul>
+		<li>- Opcodes (These are 1 byte wide)</li>
+		<li>- Registers (These are 1 byte wide)</li>
+		<li>- Number literals (These are 4 bytes wide)</li>
+		<li>- Addresses (These are 4 bytes wide)</li>
+	</ul>
+</p>
+
+<h3 id="1.2.2A">1.2.2A Numbers</h3>
+<p>
+	One of the meta byte types is the number literal type, the number literal
+	stores a number in the code which could then be used as meta data for the
+	instruction.
+</p>
+
+<p>
+	Since these numbers literals take up 4 bytes in the byte code, they can only
+	store 4 * 8bit = 32bit numbers. These numbers are normally interpreted as
+	unsigned integer numbers. meaning they can only store positive and whole numbers
+	like 5 and 10
+</p>
+
+<p>
+	One example where numbers can be used is for example in an add instruction
+	where you want to add 10 to something, you would then want to have the following
+	bytes somewhere in the code section of the bytecode
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	00 00 00 0a
+</p>
+
+<p>
+	If this is a number literal, then we would take 4 bytes, and we get the hex
+	number 00 00 00 0a, which translated to decimal would be the number 10
+</p>
+
+<h3 id="1.2.2B">1.2.2B Registers</h3>
+<p>
+	Registers take up 1 byte each in the code section and they are able to store
+	and manipulate numbers in the virtual machine. the CCVM has 4 registers that
+	we will call a, b, c and d. each of which can store an unsigned 32bit number
+</p>
+
+<p>
+	An example usage of registers is the following:<br>
+	- move the number 8 into register A, A is now 8<br>
+	- move the number 5 into register B, B is now 5<br>
+	- add register A and B together and store the result in A<br><br>
+	A will end up being 13 and B will end up being 5
+</p>
+
+<p>
+	In the bytecode, registers will be represented as 'register indexes' which
+	are 1 byte numbers that represent what register is targeted: <br>
+	- 00 is register A <br>
+	- 01 is register B <br>
+	- 02 is register C <br>
+	- 03 is register D <br>
+	<br>
+	for all the indexes after 3, the registers will loop around, so 04 is register A again.
+	tho it is possible to use post 03 indexes, it is highly disrecommended.
+</p>
+
+<p>
+	An example of a register represented in the codesection of a bytecode could be:
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	02
+</p>
+
+<p>
+	In this case, 02 is representing register C
+</p>
+
+<h3 id="1.2.2C">1.2.2C Addresses</h3>
+<p>
+	Addresses are very similair to numbers, except they are interpreted in the virtual machine
+	in a different way
+</p>
+
+<p>
+	Since registers are extremely limited in terms of the amount they can store
+	(they can only hold 4 * 4bytes = 16 bytes) There needs to be another way to store data
+	which is the heap memory.
+</p>
+
+<p>
+	The CCVM virtual heap memory, could be seen as a huge list of 32bit unsigned integer numbers
+	at each element of this list could be any number, the CCVM has special instructions dedicated to
+	reading/writing to those elements.
+</p>
+
+<p>
+	Addresses are meant to tell the virtual machine what element in that list should be used by targeted
+	for a read/write.
+</p>
+
+<p>
+	Therefore, when we talk about "address N" we mean the N'th element from the virtual memory list.
+</p>
+
+<p>
+	An example of how to represent an address in the code section of the bytecode could be:
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	00 00 00 2a
+</p>
+
+<p>
+	In this example, if this would represent an addess, it would be address 42 (since 2a in hex is 42 in decimal)
+</p>
+
+<h3 id="1.2.2D">1.2.2D Opcodes</h3>
+<p>
+	Opcodes are the meta data elements that bind addresses, register indexes
+	and numbers together to make up the instructions of the virtual machine.
+</p>
+
+<p>
+	Each opcode expects a certain set of other meta data elements, this is
+	dependant on what the meaning of the opcode is, which is arbetrairily defined.
+</p>
+
+<p>
+	Lets take the opcode "06" as example:
+</p>
+
+<p>
+	Opcode 06 means "to move a number, into a register". It expects an register (which is 1 byte wide),
+	and then a number literal (which is 4 bytes wide). Thuss the total length will be 6 bytes (1 byte for the opcode + 1 byte for the register index + 4 bytes for the number)
+</p>
+
+<p>
+	There is also a way to notate the structure of an instruction called "instruction structure syntax", for the instruction with opcode 06, the instruction structure syntax (ISS) looks like this:
+</p>
+
+<span class="codeblock cb-title">
+	ISS
+</span>
+<p class="codeblock hex">
+	06: [opcode(1) register(1) address(4)] 6
+</p>
+
+<p>
+	Lets give each of the important elements in this ISS a color:
+</p>
+
+<span class="codeblock cb-title">
+	ISS
+</span>
+<p class="codeblock hex">
+	<span class="cb-mark-blue">06</span>: [<span class="cb-mark-green">opcode(1)</span> <span class="cb-mark-green">register(1)</span> <span class="cb-mark-green">address(4)</span>] <span class="cb-mark-red">6</span>
+</p>
+
+<p>
+	The blue element describes the opcode that this instruction has, in this
+	case we are talking about the instruction with opcode 06.
+</p>
+
+<p>
+	The green elements describe all the meta data elements that this instruction
+	should have, in this case it needs an opcode, then a register and finally an
+	memory address. The numbers in the parenthesis discribe the width of that element
+	in bytes.
+</p>
+
+<p>
+	The red element describes the total width of the entire instruction, which you can
+	calculate by adding together all the width's of the meta data elements (1 + 1 + 4).
+</p>
+
+<p>
+	Lets take a look at an example of a bytecode:
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	1d 1d 1d 1d 06 01 00 00 00 2a 00
+</p>
+
+<p>
+	The first thing we should do is identify the section seperation sequence (1d 1d 1d 1d)
+	so that we know where the code section and the header sections are.
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	<span class="cb-mark-blue">1d 1d 1d 1d</span> <span class="cb-mark-green">06 01 00 00 00 2a 00</span>
+</p>
+
+<p>
+	As we can see, the section seperation sequence is right at the very start
+	of the bytecode (marked in blue), this means that the header will be completely
+	empty, and that we only have to worry about the code section (marked in green)
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	1d 1d 1d 1d <span class="cb-mark-red">06</span> 01 00 00 00 2a 00
+</p>
+
+<p>
+	As we can see above here marked in red, the first byte of the code section
+	(06) will be the first opcode, and the start of the first instruction
+</p>
+
+<p>
+	As we know from the ISS from before, 06 means that we want to move a number into
+	a register. we also know that the this instruction is 6 bytes wide, so the entire
+	instruction should be this:
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	1d 1d 1d 1d <span class="cb-mark-red">06</span> <span class="cb-mark-blue">01</span> <span class="cb-mark-green">00 00 00 2a</span> 00
+</p>
+
+<p>
+	The byte marked in blue tells us that we want to send the nummer to the register
+	with index 01 (which is register B). The green bytes tell us that the number we want
+	to put in register B will be 0000002a which is 42.
+</p>
+
+<p>
+	Once register B has been set to the number 42, the virtual machine will step forward to
+	the next instruction which starts right here marked in red:
+</p>
+
+<span class="codeblock cb-title">
+	Hexadecimal
+</span>
+<p class="codeblock hex">
+	1d 1d 1d 1d 06 01 00 00 00 2a <span class="cb-mark-red">00</span>
+</p>
+
+<p>
+	The next opcode will thuss be 00. opcode 00 has an ISS that looks like this:
+</p>
+
+<span class="codeblock cb-title">
+	ISS
+</span>
+<p class="codeblock hex">
+	00: [opcode(1)] 1
+</p>
+
+<p>
+	It does not expect any meta data elements and is only a single opcode.
+</p>
+
+<p>
+	Opcode 00 tells the virtual machine to stop running, and thuss after this instruction
+	is done, the program will stop.
+</p>
+
+<h3 id="1.3">1.3 Instruction list</h3>
+<p>
+	We have already discussed the opcodes 00 and 06, however CCVM has many more.
+	Here is a list of all of them, including their short hand name (in red), a discription, and its ISS (in blue)
+</p>
+
+<span class="codeblock cb-title">
+	ISS + Descriptions list
+</span>
+<p class="codeblock hex">
+	-------------------------------------------<br><br>
+	<b class="cb-mark-red">STP</b>: <br>
+	emediatly stops the virtual machine from executing the code<br>
+	<span class="cb-mark-blue">00: [opcode(1)] 1</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">PSH (number)</b>: <br>
+	pushes a number to the stack<br>
+	<span class="cb-mark-blue">01: [opcode(1) number(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">PSH (register)</b>: <br>
+	pushes the value of a register to the stack<br>
+	<span class="cb-mark-blue">02: [opcode(1) register(1)] 2</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">POP (register)</b>: <br>
+	pops the top value on the stack and puts it in a register<br>
+	<span class="cb-mark-blue">03: [opcode(1) register(1)] 2</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">POP (address)</b>: <br>
+	pops the top value on the stack and puts it in the memory at some address<br>
+	<span class="cb-mark-blue">04: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">DUP (register)</b>: <br>
+	duplicates the top value of the stack<br>
+	<span class="cb-mark-blue">05: [opcode(1)] 1</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">MOV (number -> register)</b>: <br>
+	moves a number into a register<br>
+	<span class="cb-mark-blue">06: [opcode(1) register(1) number(4)] 6</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">MOV (number -> address)</b>: <br>
+	moves a number into memory to some address<br>
+	<span class="cb-mark-blue">07: [opcode(1) address(4) number(4)] 9</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">MOV (address -> register)</b>: <br>
+	moves the value at some address to a register<br>
+	<span class="cb-mark-blue">08: [opcode(1) register(1) address(4)] 6</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">MOV (register -> address)</b>: <br>
+	moves the value of a register into memory at some address<br>
+	<span class="cb-mark-blue">09: [opcode(1) address(4) register(1)] 6</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">MOV (register -> register)</b>: <br>
+	moves the value of a register into another register<br>
+	<span class="cb-mark-blue">0a: [opcode(1) register(1) register(1)] 3</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">MOV (address -> address)</b>: <br>
+	moves the value at some address in memory to some other address in memory<br>
+	<span class="cb-mark-blue">0b: [opcode(1) address(4) address(4)] 9</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">PSH (address)</b>: <br>
+	pushes the value at some address in memory to the stack<br>
+	<span class="cb-mark-blue">0c: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+
+
+
+	<b class="cb-mark-red">ADD (register, regsiter)</b>: <br>
+	adds the values of 2 registers and stores the result in the first register<br>
+	<span class="cb-mark-blue">10: [opcode(1) register(1) register(1)] 3</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">ADD</b>: <br>
+	pops 2 values from the stack, adds them together and pushes the result back<br>
+	<span class="cb-mark-blue">11: [opcode(1)] 1</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">SUB (register, register)</b>: <br>
+	subtracts the values of 2 registers and stores the result in the first register<br>
+	<span class="cb-mark-blue">12: [opcode(1) register(1) register(1)] 3</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">SUB</b>: <br>
+	pops 2 values from the stack, subtracts them and pushes the result back<br>
+	<span class="cb-mark-blue">13: [opcode(1)] 1</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">MUL (address)</b>: <br>
+	multiplies the values of 2 registers and stores the result in the first register<br>
+	<span class="cb-mark-blue">14: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+		<b class="cb-mark-red">MUL</b>: <br>
+	pops 2 values from the stack, multiplies them and pushes the result back<br>
+	<span class="cb-mark-blue">15: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">DIV (address)</b>: <br>
+	divides the values of 2 registers and stores the result in the first register<br>
+	<span class="cb-mark-blue">16: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">DIV</b>: <br>
+	pops 2 values from the stack, divides the first one by the second them and pushes the result back<br>
+	<span class="cb-mark-blue">17: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">NOT (address)</b>: <br>
+	performs a bitwise not operation on a register<br>
+	<span class="cb-mark-blue">18: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">NOT</b>: <br>
+	pops a value from the stack, performs a bitwise not operation on it and pushes the result back<br>
+	<span class="cb-mark-blue">19: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+		<b class="cb-mark-red">AND (address)</b>: <br>
+	performs a bitwise and operation on 2 registers<br>
+	<span class="cb-mark-blue">1a: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">AND</b>: <br>
+	pops 2 values from the stack, performs a bitwise and operation on them and pushes the result back<br>
+	<span class="cb-mark-blue">1b: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">OR (address)</b>: <br>
+	performs a bitwise or operation on 2 registers<br>
+	<span class="cb-mark-blue">1c: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">OR</b>: <br>
+	pops 2 values from the stack, performs a bitwise or operation on them and pushes the result back<br>
+	<span class="cb-mark-blue">1d: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">XOR (address)</b>: <br>
+	performs a bitwise xor operation on 2 registers<br>
+	<span class="cb-mark-blue">1e: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+
+	<b class="cb-mark-red">XOR</b>: <br>
+	pops 2 values from the stack, performs a bitwise xor operation on them and pushes the result back<br>
+	<span class="cb-mark-blue">1f: [opcode(1) address(4)] 5</span>
+	<br><br>-------------------------------------------<br><br>
+</p>
+
+<!--
+	registers
+	numbers
+	instruction
+	opcode
+	addresses
+	section
+	code section
+	header section
+	section seperation sequence
+	hex format
+	register indexes
+	post 3 register index
+	heap memory
+	bytecode
+	instruction meta data elements
+	instruction structure syntax (ISS)
+-->
+
+<div style="height: 0vh"></div>
